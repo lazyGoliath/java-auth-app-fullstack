@@ -1,0 +1,3 @@
+[submodule "auth-app-backend/auth-app-backend"]
+	path = auth-app-backend/auth-app-backend
+	url = https://github.com/lazyGoliath/java-auth-app.git
