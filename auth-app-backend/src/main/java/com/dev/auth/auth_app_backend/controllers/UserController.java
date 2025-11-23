@@ -7,8 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/v1/users")
 @AllArgsConstructor
@@ -33,9 +31,28 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    // get user by email id
+    // get user by email id //api/v1/users/email/{email}
     @GetMapping("email/{email}")
     public ResponseEntity<UserDto> getUserByEmail(@PathVariable("email") String email) {
         return ResponseEntity.ok(userService.getUserByEmail(email));
+    }
+
+    // delete user - /api/v1/users/{userId}
+    @DeleteMapping("/{userId}")
+    public void deleteUser(@PathVariable("userId") String userId) {
+        userService.deleteUser(userId);
+    }
+
+    // update user - //api/v1/user/{userId}
+    @PutMapping("/{userId}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable("userId") String userId, @RequestBody UserDto userDto) {
+        // userDto contains the updated data sent by user
+        return ResponseEntity.ok(userService.updateUser(userDto, userId));
+    }
+
+    // get user by id - //api/v1/user/{userId}
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDto> getUserById(@PathVariable("userId") String userId) {
+        return ResponseEntity.ok(userService.getUserById(userId));
     }
 }

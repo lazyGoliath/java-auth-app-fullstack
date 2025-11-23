@@ -19,8 +19,8 @@ public class GlobalExceptionHandler {
 
     // illegal argument exception handler :: method
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgumentFoundException(IllegalArgumentException exception) {
-        ErrorResponse internalServerError = new ErrorResponse(400, HttpStatus.BAD_REQUEST, exception.getMessage(), "User Data Invalid !!");
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException exception) {
+        ErrorResponse internalServerError = new ErrorResponse(400, HttpStatus.BAD_REQUEST, exception.getMessage(), "U ser Data Invalid !!");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(internalServerError);
     }
 }

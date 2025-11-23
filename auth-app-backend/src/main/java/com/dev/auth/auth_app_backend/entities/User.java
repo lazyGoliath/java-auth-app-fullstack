@@ -30,7 +30,7 @@ public class User{
     @Column(name = "user_name", length = 500)
     private String name;
     private String image;
-    private boolean enable = false;
+    private boolean enable = true;
     private Instant createdAt = Instant.now();
     private Instant updatedAt = Instant.now();
 //    private String gender;
