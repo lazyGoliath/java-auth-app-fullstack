@@ -4,11 +4,12 @@ import com.dev.auth.auth_app_backend.entities.Provider;
 import com.dev.auth.auth_app_backend.entities.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 @Setter
@@ -18,7 +19,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name="users")
-public class User{
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -60,5 +61,44 @@ public class User{
     @PreUpdate
     protected void preUpdate(){
         updatedAt = Instant.now();
+    }
+
+    // implement UserDetails interface functions
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+
+        return roles
+                .stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .toList();
+    }
+
+    @Override
+    public String getUsername() {
+        return this.email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        //return UserDetails.super.isAccountNonExpired();
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        //return UserDetails.super.isAccountNonLocked();
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        //return UserDetails.super.isCredentialsNonExpired();
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        //return UserDetails.super.isEnabled();
+        return this.enable;
     }
 }
