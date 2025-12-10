@@ -29,6 +29,7 @@ public class JwtService {
             @Value("${security.jwt.refresh-ttl-seconds}") long refreshTtlSeconds,
             @Value("${security.jwt.issuer}") String issuer) {
 
+
         if(secret==null || secret.length()<64){
             throw new IllegalArgumentException("Invalid secret");
         }
@@ -108,4 +109,16 @@ public class JwtService {
         Claims c = parse(token).getPayload();
         return c.getId();
     }
+
+    public List<String> getRoles(String token){
+        Claims c = parse(token).getPayload();
+        return (List<String>) c.getOrDefault("roles", List.of());
+    }
+
+    public String getEmail(String token){
+        Claims c = parse(token).getPayload();
+        return c.get("email").toString();
+    }
+
+    //public boolean validateToken(){}
 }
