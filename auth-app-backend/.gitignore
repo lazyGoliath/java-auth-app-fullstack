@@ -33,9 +33,5 @@ build/
 .vscode/
 
 # configurations
-src/main/resources/application-prod.yaml
-src/main/resources/application-qa.yaml
-src/main/resources/application-dev.yaml
-src/test/resources/application-prod.yaml
-src/tset/resources/application-qa.yaml
-src/test/resources/application-dev.yaml
+src/main/resources/
+src/test/resources/
