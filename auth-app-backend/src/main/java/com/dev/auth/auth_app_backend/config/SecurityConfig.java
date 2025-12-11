@@ -39,6 +39,7 @@ public class SecurityConfig {
             .authorizeHttpRequests((authorize) -> authorize
                 .requestMatchers("/api/v1/auth/register").permitAll()
                 .requestMatchers("/api/v1/auth/login").permitAll()
+                .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             )
             //.httpBasic(Customizer.withDefaults()) -> JWT
@@ -50,8 +51,8 @@ public class SecurityConfig {
                     resp.setContentType("application/json");
                     String mssg = "Unauthorized access : "+ex.getMessage();
 
-                    String error = req.getAttribute("error").toString();
-                    mssg = (error!=null) ? error : mssg;
+                    var error = req.getAttribute("error");
+                    mssg = (error!=null) ? error.toString() : mssg;
 
 //                    Map<String, String> errorMap = Map.of(
 //                            "message",mssg,
