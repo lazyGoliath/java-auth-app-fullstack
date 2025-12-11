@@ -1,12 +1,16 @@
 package com.dev.auth.auth_app_backend.config;
 
+import com.dev.auth.auth_app_backend.dtos.ApiError;
 import com.dev.auth.auth_app_backend.security.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -45,13 +49,18 @@ public class SecurityConfig {
                     resp.setStatus(401);  //unauthenticated user
                     resp.setContentType("application/json");
                     String mssg = "Unauthorized access : "+ex.getMessage();
-                    Map<String, String> errorMap = Map.of(
-                            "message",mssg,
-                            "status",String.valueOf(401),
-                            "statusCode", Integer.toString(401)
-                    );
+
+                    String error = req.getAttribute("error").toString();
+                    mssg = (error!=null) ? error : mssg;
+
+//                    Map<String, String> errorMap = Map.of(
+//                            "message",mssg,
+//                            "status",String.valueOf(401),
+//                            "statusCode", Integer.toString(401)
+//                    );
+                    var apiError = ApiError.of(HttpStatus.UNAUTHORIZED.value(), "Unauthorized Access !", mssg, req.getRequestURI());
                     var objectMapper = new ObjectMapper();
-                    resp.getWriter().write(objectMapper.writeValueAsString(errorMap));
+                    resp.getWriter().write(objectMapper.writeValueAsString(apiError));
                 })
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -67,6 +76,11 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 //    @Bean
 //    public UserDetailsService users(){
