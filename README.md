@@ -93,6 +93,7 @@ auth-app-boot-react/
    ```
 
 3. Configure `application.yml`:
+(Skeleton)
 
    ```yaml
    server:
@@ -104,7 +105,7 @@ auth-app-boot-react/
      datasource:
        url: jdbc:mysql://localhost:3306/auth_app
        username: root
-       password: root
+       password: PASSWORD
      jpa:
        hibernate:
          ddl-auto: update
@@ -138,7 +139,7 @@ auth-app-boot-react/
              scope: [user:email, read:user]
    ```
 
-4. Set environment variables:
+5. Set environment variables:
 
    ```bash
    export JWT_SECRET="your-random-long-secret"
@@ -148,7 +149,7 @@ auth-app-boot-react/
    export GITHUB_CLIENT_SECRET="your-github-client-secret"
    ```
 
-5. Run the Spring Boot app:
+6. Run the Spring Boot app:
    ```bash
    mvn spring-boot:run
    ```
