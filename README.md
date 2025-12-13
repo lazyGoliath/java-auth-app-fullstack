@@ -30,23 +30,24 @@ Supports **JWT-based authentication** with **username/password login**, as well 
 
 ### Home page
 
-![Homepage](./screenshots/sc1.png)
+![Homepage](./screenshot/sc1.png)
 
+<!--
 ### Login page
 
-![Login Page](./screenshots/sc2.png)
+![Login Page](./screenshot/sc2.png)
 
 ### Login page with error
 
-![Login Page](./screenshots/sc3.png)
-
+![Login Page](./screenshot/sc3.png)
+-->
 ### Register page
 
-![Register Page](./screenshots/sc4.png)
+![Register Page](./screenshot/sc4.png)
 
 ### Dashboard
 
-![Dashboard](./screenshots/sc5.png)
+![Dashboard](./screenshot/sc5.png)
 
 ## 📁 Project Structure
 
