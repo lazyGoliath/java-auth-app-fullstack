@@ -1,6 +1,7 @@
 package com.dev.auth.auth_app_backend.controllers;
 
 import com.dev.auth.auth_app_backend.dtos.LoginRequest;
+import com.dev.auth.auth_app_backend.dtos.RefreshTokenRequest;
 import com.dev.auth.auth_app_backend.dtos.TokenResponse;
 import com.dev.auth.auth_app_backend.dtos.UserDto;
 import com.dev.auth.auth_app_backend.entities.RefreshToken;
@@ -11,10 +12,13 @@ import com.dev.auth.auth_app_backend.security.CookieService;
 import com.dev.auth.auth_app_backend.security.JwtService;
 import com.dev.auth.auth_app_backend.services.AuthService;
 import com.dev.auth.auth_app_backend.services.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,6 +29,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -95,6 +101,117 @@ public class AuthController {
         } catch (Exception e){
             throw new BadCredentialsException("Invalid username and password");
         }
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenResponse> refreshToken(
+            @RequestBody(required = false) RefreshTokenRequest body,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        // read refresh token from any of the 4 methods as per the org requirement
+        String refreshToken = readRefreshTokenFromRequest(body, request)
+                .orElseThrow(() -> new BadCredentialsException("Missing Refresh Token !"));
+
+        if(!jwtService.isRefreshToken(refreshToken)){
+            throw new BadCredentialsException("Invalid Refresh Token Type");
+        }
+
+        String jti = jwtService.getJti(refreshToken);
+        UUID userId = jwtService.getUserId(refreshToken);
+
+        // extract stored refresh token from the jti
+        RefreshToken storedRefreshToken = refreshTokenRepository.findByJti(jti).orElseThrow(() ->
+                new BadCredentialsException("Refresh Token not recognized!"));
+
+        // validate the token
+        if(storedRefreshToken.isRevoked())
+            throw new BadCredentialsException("Refresh Token Already Revoked");
+        if(storedRefreshToken.getExpiresAt().isBefore(Instant.now()))
+            throw new BadCredentialsException("Refresh Token Expired");
+        // check if the same user has the refresh token
+        if(!storedRefreshToken.getUser().getId().equals(userId))
+            throw new BadCredentialsException("Token does not belong to the user");
+
+        // refresh token rotation
+        storedRefreshToken.setRevoked(true);
+        String newJti = UUID.randomUUID().toString();
+        storedRefreshToken.setReplacedByToken(newJti);
+        refreshTokenRepository.save(storedRefreshToken);
+
+        // extract user from the stored refresh token
+        User user = storedRefreshToken.getUser();
+
+        // build the new refresh token
+        var newRefreshTokenOb = RefreshToken.builder()
+                .jti(newJti)
+                .user(user)
+                .createdAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(jwtService.getRefreshTtlSeconds()))
+                .revoked(false)
+                .build();
+
+        // save the new refresh token in db
+        refreshTokenRepository.save(newRefreshTokenOb);
+
+        // generate new access and refresh tokens
+        String newAccessToken = jwtService.generateToken(user);
+        String newRefreshToken = jwtService.generateRefreshToken(user, newRefreshTokenOb.getJti());
+
+        // attach them to the cookie
+        cookieService.attachRefreshCookie(response, newRefreshToken, (int)jwtService.getRefreshTtlSeconds());
+        cookieService.addNoStoreHeaders(response);
+
+        TokenResponse tokenResponse = TokenResponse.of(newAccessToken, newRefreshToken,
+                jwtService.getAccessTtlSeconds(),mapper.map(user, UserDto.class));
+
+        return ResponseEntity.ok(tokenResponse);
+    }
+
+    // method to read refresh token from header or body
+    private Optional<String> readRefreshTokenFromRequest(RefreshTokenRequest body, HttpServletRequest request) {
+
+        // 1. prefer reading token from Cookie
+        if(request.getCookies()!=null){
+
+            Optional<String> fromCookie = Arrays.stream(request.getCookies())
+                    .filter(c-> cookieService.getRefreshTokenCookieName()
+                            .equals(c.getName()))
+                    .map(Cookie::getValue)
+                    .filter(v-> !v.isBlank())
+                    .findFirst();
+
+            if(fromCookie.isPresent())
+                return fromCookie;
+        }
+
+        // 2. read from body
+        if(body!=null && body.refreshToken()!=null && !body.refreshToken().isBlank()){
+            return Optional.of(body.refreshToken());
+        }
+
+        // 3. read from a custom header
+        String refreshHeader = request.getHeader("X-Refresh-Token");  // big enterprises
+        if(refreshHeader!=null && !refreshHeader.isEmpty()){
+            return Optional.of(refreshHeader);
+        }
+
+        // 4. return refresh token like an access token format
+        // Authorization : Bearer <token>
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if(authHeader!=null && authHeader.regionMatches(true, 0, "Bearer ", 0, 7)){
+
+            String token = authHeader.substring(7).trim();
+            if(!token.isEmpty()){
+                try{
+                    if(jwtService.isRefreshToken(token)){
+                        return Optional.of(token);
+                    }
+                } catch(Exception ignored){}
+            }
+        }
+
+        return Optional.empty();
     }
 
     @PostMapping("/register")
