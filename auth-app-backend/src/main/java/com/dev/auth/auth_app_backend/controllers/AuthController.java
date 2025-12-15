@@ -12,6 +12,7 @@ import com.dev.auth.auth_app_backend.security.CookieService;
 import com.dev.auth.auth_app_backend.security.JwtService;
 import com.dev.auth.auth_app_backend.services.AuthService;
 import com.dev.auth.auth_app_backend.services.UserService;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,6 +27,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -212,6 +215,32 @@ public class AuthController {
         }
 
         return Optional.empty();
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        readRefreshTokenFromRequest(null, request)
+                .ifPresent(token ->{
+                    try{
+                        if(jwtService.isRefreshToken(token)){
+                            String jti = jwtService.getJti(token);
+                            refreshTokenRepository.findByJti(jti)
+                                    .ifPresent(rt ->{
+                                        rt.setRevoked(true);
+                                        refreshTokenRepository.save(rt);
+                                    });
+                        }
+                    } catch(JwtException ignored){}
+                });
+
+        // use cookie util to clear out cookie form response
+        cookieService.clearRefreshCookie(response);
+        cookieService.addNoStoreHeaders(response);
+
+        // clear out security context
+        SecurityContextHolder.clearContext();
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/register")
