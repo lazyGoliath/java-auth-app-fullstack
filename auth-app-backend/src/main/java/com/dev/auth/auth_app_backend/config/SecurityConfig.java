@@ -2,7 +2,10 @@ package com.dev.auth.auth_app_backend.config;
 
 import com.dev.auth.auth_app_backend.dtos.ApiError;
 import com.dev.auth.auth_app_backend.security.JwtAuthenticationFilter;
+import com.dev.auth.auth_app_backend.security.OAuth2SuccessHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,8 +31,14 @@ import java.util.Map;
 @Configuration
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationFilter  jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter  jwtAuthenticationFilter;
+    private final OAuth2SuccessHandler successHandler;
+    private final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, OAuth2SuccessHandler successHandler) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.successHandler = successHandler;
+    }
 
     // make /register and /login end points accessible
     @Bean
@@ -37,18 +46,25 @@ public class SecurityConfig {
 
         http
             .authorizeHttpRequests((authorize) -> authorize
-                .requestMatchers("/api/v1/auth/register").permitAll()
-                .requestMatchers("/api/v1/auth/login").permitAll()
-                .requestMatchers("/api/v1/auth/refresh").permitAll()
-                    .requestMatchers("/api/v1/auth/logout").permitAll()
-                .requestMatchers("/error").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers(
+                                    "/api/v1/auth/register",
+                                    "/api/v1/auth/login",
+                                    "/api/v1/auth/refresh",
+                                    "/api/v1/auth/logout",
+                                    "/error"
+                            ).permitAll()
+                            .anyRequest().authenticated()
             )
+            // oauth 2 configuration
+                .oauth2Login(oauth->
+                        oauth.successHandler(successHandler)
+                                .failureHandler(null))
+                .logout(AbstractHttpConfigurer::disable)
             //.httpBasic(Customizer.withDefaults()) -> JWT
             .exceptionHandling((e)->
                 e.authenticationEntryPoint((req, resp, ex)->{
                     // error message
-                    ex.printStackTrace();
+                    log.error("Authentication error", ex);
                     resp.setStatus(401);  //unauthenticated user
                     resp.setContentType("application/json");
                     String mssg = "Unauthorized access : "+ex.getMessage();
