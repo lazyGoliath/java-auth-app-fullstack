@@ -5,7 +5,6 @@ import com.dev.auth.auth_app_backend.entities.RefreshToken;
 import com.dev.auth.auth_app_backend.entities.User;
 import com.dev.auth.auth_app_backend.repositories.RefreshTokenRepository;
 import com.dev.auth.auth_app_backend.repositories.UserRepository;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
@@ -36,7 +35,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             HttpServletRequest request,
             HttpServletResponse response,
             Authentication authentication
-    ) throws IOException, ServletException {
+    ) throws IOException {
 
         logger.info("Successful authentication");
         logger.info(authentication.toString());
@@ -51,8 +50,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             registrationId = token.getAuthorizedClientRegistrationId();
         }
 
-        logger.info("Registration Id: " + registrationId);
-        logger.info("User: " + oAuth2User.getAttributes().toString());
+        logger.info("Registration Id: {}", registrationId);
+        logger.info("User: {}", oAuth2User.getAttributes().toString());
 
         User user;
 
@@ -86,10 +85,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 // check if user is already there in db before saving in db
                 userRepository.findByEmail(email).ifPresentOrElse((usr) -> {
                     logger.info("User already there in db");
-                    logger.info("User: " + usr.toString());
-                }, () -> {
-                    userRepository.save(user);
-                });
+                    logger.info("User: {}", usr);
+                }, () -> userRepository.save(user));
             }
 
             default-> {
