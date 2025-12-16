@@ -46,13 +46,7 @@ public class SecurityConfig {
 
         http
             .authorizeHttpRequests((authorize) -> authorize
-                .requestMatchers(
-                                    "/api/v1/auth/register",
-                                    "/api/v1/auth/login",
-                                    "/api/v1/auth/refresh",
-                                    "/api/v1/auth/logout",
-                                    "/error"
-                            ).permitAll()
+                .requestMatchers(AppConstants.API_CONSTANT_URLS).permitAll()
                             .anyRequest().authenticated()
             )
             // oauth 2 configuration
