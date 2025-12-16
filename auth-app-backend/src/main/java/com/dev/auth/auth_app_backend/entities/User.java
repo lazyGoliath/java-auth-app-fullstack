@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.Instant;
 import java.util.*;
 
+@ToString
 @Getter
 @Setter
 @AllArgsConstructor
@@ -40,6 +41,7 @@ public class User implements UserDetails {
     // provider can be Google, GitHub,etc. OAuth
     @Enumerated(EnumType.STRING)
     private Provider provider = Provider.LOCAL;
+    private String providerId;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
