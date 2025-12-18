@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, type FormEvent } from "react"
 import {
   Card,
   CardHeader,
@@ -9,17 +9,61 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import toast from "react-hot-toast"
+import type RegisterData from "@/models/RegisterData"
+import { registerUser } from "@/services/AuthService"
 
 function Signup() {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [data, setData] = useState<RegisterData>({
+    name: "",
+    email: "",
+    password: "",
+  })
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // TODO: replace with real sign-up handler
-    console.log({ name, email, password })
+  // handle input change
+  const handleInputChange = (event:React.ChangeEvent<HTMLInputElement>) => {
+    // console.log(event.target.name);
+    // console.log(event.target.value);
+    setData((value) => ({
+      ...value,
+      [event.target.name]: event.target.value,
+    }))
   }
+
+  // handle form submit
+  const handleFormSubmit = async (event: FormEvent) => {
+    event.preventDefault()
+
+    // data validation
+    if (data.name.trim() === "") {
+      toast.error("Name is required")
+      return 
+    }
+    if (data.email.trim() === "") {
+      toast.error("Email is required")
+      return 
+    }
+    if (data.password.trim() === "" || data.password.length < 6) {
+      toast.error("Password must be at least 6 characters")
+      return 
+    }
+
+    console.log("Form submitted:", data)
+
+    // form submission logic goes here(api call)
+    try{
+      const result = await registerUser(data)
+      console.log("Registration successful:", result)
+      toast.success("Registration successful! You can now log in.")
+    } catch (error) {
+      console.error("Registration error:", error)
+      toast.error("Registration failed. Please try again.")
+    }
+  }
+
+  const [loading, setLoading] = useState<boolean>(false)
+
+  const [error, setError] = useState(null)
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
@@ -36,15 +80,16 @@ function Signup() {
             </p>
           </div>
 
-          <form className="grid gap-4" onSubmit={onSubmit}>
+          <form onSubmit={handleFormSubmit} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="name">Full name</Label>
               <input
                 id="name"
                 type="text"
                 placeholder="Jane Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={data.name}
+                name="name"
+                onChange={handleInputChange}
                 required
                 className="h-10 rounded-md border bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
@@ -55,8 +100,9 @@ function Signup() {
                 id="email"
                 type="email"
                 placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={data.email}
+                name="email"
+                onChange={handleInputChange}
                 required
                 className="h-10 rounded-md border bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
@@ -67,8 +113,9 @@ function Signup() {
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={data.password}
+                name="password"
+                onChange={handleInputChange}
                 required
                 className="h-10 rounded-md border bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
