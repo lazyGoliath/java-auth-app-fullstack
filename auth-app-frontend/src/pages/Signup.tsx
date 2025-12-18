@@ -13,6 +13,9 @@ import toast from "react-hot-toast"
 import type RegisterData from "@/models/RegisterData"
 import { registerUser } from "@/services/AuthService"
 import { useNavigate } from "react-router"
+import { Spinner } from "@/components/ui/spinner"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { CheckCircle2Icon } from "lucide-react"
 
 function Signup() {
   const [data, setData] = useState<RegisterData>({
@@ -23,6 +26,8 @@ function Signup() {
 
   // hook
   const navigate = useNavigate()
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<any>(null)
 
   // handle input change
   const handleInputChange = (event:React.ChangeEvent<HTMLInputElement>) => {
@@ -36,6 +41,8 @@ function Signup() {
 
   // handle form submit
   const handleFormSubmit = async (event: FormEvent) => {
+
+    setLoading(true)
     event.preventDefault()
 
     // data validation
@@ -49,7 +56,7 @@ function Signup() {
     }
     if (data.password.trim() === "" || data.password.length < 6) {
       toast.error("Password must be at least 6 characters")
-      return 
+      return
     }
 
     console.log("Form submitted:", data)
@@ -65,12 +72,11 @@ function Signup() {
     } catch (error) {
       console.error("Registration error:", error)
       toast.error("Registration failed. Please try again.")
+      setError(error)
+    } finally {
+      setLoading(false)
     }
   }
-
-  const [loading, setLoading] = useState<boolean>(false)
-
-  const [error, setError] = useState(null)
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
@@ -86,6 +92,17 @@ function Signup() {
               Enter your info to sign up or continue with a provider.
             </p>
           </div>
+
+          {/* Error Section */}
+          {error && (
+          <div className="grid mb-3 w-full max-w-xl items-start gap-4">
+            <Alert variant={"destructive"}>
+              <CheckCircle2Icon />
+              <AlertTitle>{error.response.data.error}</AlertTitle>
+              <AlertDescription>{error.response.data.message}</AlertDescription>
+            </Alert>
+          </div>
+          )}
 
           <form onSubmit={handleFormSubmit} className="grid gap-4">
             <div className="grid gap-2">
@@ -128,8 +145,12 @@ function Signup() {
               />
             </div>
 
-            <Button type="submit" className="mt-2 w-full">
-              Sign Up
+            <Button disabled={loading} type="submit" className="mt-2 w-full">
+              { loading ? (
+                <><Spinner /> Signing Up...</>
+              ) : (
+                "Sign Up"
+              )}
             </Button>
           </form>
 
