@@ -1,5 +1,6 @@
 import type RegisterData from "@/models/RegisterData";
 import apiClient from "@/config/ApiClient";
+import type LoginData from "@/models/LoginData";
 
 // resgister user service
 export const registerUser = async (signUpData: RegisterData) => {
@@ -11,6 +12,13 @@ export const registerUser = async (signUpData: RegisterData) => {
 }
 
 // login user service
+export const loginUser = async (loginData: LoginData) => {
+
+    // api call to backend server
+    const response = await apiClient.post("/auth/login", loginData)
+
+    return response.data
+}
 
 // get current user service
 

@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import toast from "react-hot-toast"
 import type RegisterData from "@/models/RegisterData"
 import { registerUser } from "@/services/AuthService"
+import { useNavigate } from "react-router"
 
 function Signup() {
   const [data, setData] = useState<RegisterData>({
@@ -19,6 +20,9 @@ function Signup() {
     email: "",
     password: "",
   })
+
+  // hook
+  const navigate = useNavigate()
 
   // handle input change
   const handleInputChange = (event:React.ChangeEvent<HTMLInputElement>) => {
@@ -55,6 +59,9 @@ function Signup() {
       const result = await registerUser(data)
       console.log("Registration successful:", result)
       toast.success("Registration successful! You can now log in.")
+
+      // navigate/redirect to login page after successful registration
+      navigate("/login")
     } catch (error) {
       console.error("Registration error:", error)
       toast.error("Registration failed. Please try again.")
