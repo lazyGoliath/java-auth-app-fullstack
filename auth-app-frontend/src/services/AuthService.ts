@@ -1,6 +1,7 @@
 import type RegisterData from "@/models/RegisterData";
 import apiClient from "@/config/ApiClient";
 import type LoginData from "@/models/LoginData";
+import type LoginResponsetData from "@/models/LoginResponseData";
 
 // resgister user service
 export const registerUser = async (signUpData: RegisterData) => {
@@ -15,7 +16,9 @@ export const registerUser = async (signUpData: RegisterData) => {
 export const loginUser = async (loginData: LoginData) => {
 
     // api call to backend server
-    const response = await apiClient.post("/auth/login", loginData)
+    const response = await apiClient.post<LoginResponsetData>(
+        "/auth/login",
+        loginData)
 
     return response.data
 }

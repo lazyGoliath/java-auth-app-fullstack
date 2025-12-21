@@ -11,11 +11,12 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import type LoginData from "@/models/LoginData"
 import toast from "react-hot-toast"
-import apiClient from "@/config/ApiClient"
+//import apiClient from "@/config/ApiClient"
 import { useNavigate } from "react-router"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { CheckCircle2Icon } from "lucide-react"
 import { Spinner } from "@/components/ui/spinner"
+import useAuth from "@/auth/store"
 
 function Login() {
   
@@ -28,6 +29,7 @@ function Login() {
   const [error, setError] = useState<any>(null)
 
   const navigate = useNavigate()
+  const login = useAuth((state) => state.login)
 
   const handleInputChange = (event:React.ChangeEvent<HTMLInputElement>) => {
     setLoginData((value) => ({
@@ -55,8 +57,13 @@ function Login() {
     // Add login logic here
     try { 
       
-      const userInfo = await apiClient.post("/auth/login", loginData)
-      console.log("Login successful:", userInfo.data)
+      // const userInfo = await apiClient.post("/auth/login", loginData)
+      // console.log("Login successful:", userInfo.data)
+
+      // login function using zustand : useAuth store
+      const userInfo = await login(loginData)
+      console.log("Login successful:", userInfo)
+
       toast.success("Login successful!")
 
       // redirect url
