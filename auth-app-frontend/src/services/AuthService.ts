@@ -23,6 +23,13 @@ export const loginUser = async (loginData: LoginData) => {
     return response.data
 }
 
+// logout user service
+export const logoutUser = async () => {
+
+    const response = await apiClient.post("/auth/logout")
+    return response.data
+}
+
 // get current user service
 
 // logout user service

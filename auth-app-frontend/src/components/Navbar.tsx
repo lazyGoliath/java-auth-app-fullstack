@@ -1,14 +1,30 @@
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { Shield } from "lucide-react";
 import useAuth from "@/auth/store";
+import { Spinner } from "./ui/spinner";
 
 function Navbar() {
 
     const [isOpen, setIsOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
     const checkLogin = useAuth((state) => state.checkLogin);
     const user = useAuth((state) => state.user);
+    const logout = useAuth((state) => state.logout);
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        try {
+            setLoading(true);
+            await logout(false);
+            navigate("/login");
+        } catch (error) {
+            console.error("Logout failed:", error);
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <nav className="sticky top-0 z-50 flex justify-between items-center px-6 py-4 bg-slate-950/80 backdrop-blur-md text-white shadow-lg border-b border-slate-800/50 transition-all duration-300">
@@ -72,10 +88,18 @@ function Navbar() {
                         </a>
                         <div className="flex gap-3 md:gap-4 flex-col md:flex-row w-full md:w-auto">
                             <Button
+                            onClick={handleLogout}
                             variant="outline"
                             className="w-full md:w-auto px-6 py-2 border-blue-500/30 text-blue-400 hover:bg-blue-500/10 hover:border-blue-400 hover:text-blue-300 transition-all duration-200 rounded-full backdrop-blur-sm"
+                            disabled={loading}
                             >
-                                Logout
+                                {
+                                loading ? (
+                                <><Spinner /> Logging Out...</>
+                                ) : (
+                                "Logout"
+                                )
+                            }
                             </Button>
                         </div>
                     </>
