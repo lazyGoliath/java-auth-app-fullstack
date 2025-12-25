@@ -1,0 +1,18 @@
+server:
+  port: #specify port number here
+
+spring:
+  datasource:
+
+    # production level configuration for scalability
+
+    # hikari cp configuration
+    hikari:
+      pool-name: HikariCP
+      maximum-pool-size: 5
+      connection-timeout: 10000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      validation-timeout: 1800000
+      leak-detection-threshold: 0
+      initialization-fail-timeout: -1

@@ -1,0 +1,64 @@
+# development version of configuration
+server:
+  port: #specify port number here
+
+# database configurations
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/ # your table name
+    username: # enter db username
+    password: # enter db password
+
+  # jpa and hibernate configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  # oauth 2 configurations
+  security:
+      oauth2:
+        client:
+          registration:
+            google:
+              client-id: ${GOOGLE_CLIENT_ID:sample-client-id}
+              client-secret: ${GOOGLE_CLIENT_SECRET:sample-client-secret}
+              # REDIRECT URL : /login/oauth2/code/google
+              # Authorization URL : /oauth2/authorization/google
+              scope:
+                - email
+                - profile
+                - openid
+            github:
+              client-id: ${GITHUB_CLIENT_ID:sample-client-id}
+              client-secret: ${GITHUB_CLIENT_SECRET:sample-client-secret}
+              # REDIRECT/CALLBACK URL : /login/oauth2/code/github
+              # Authorization URL : /oauth2/authorization/github
+              scope:
+                - user:email
+                - read:user
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+security:
+  jwt:
+    secret: ${JWT_SECRET: #your jwt secret here}
+    issuer: ${JWT_ISSUER:api.xxxxxend.com}
+    access-ttl-seconds: ${JWT_ACCESS_TTL_SECONDS:600}
+    refresh-ttl-seconds: ${JWT_REFRESH_TTL_SECONDS:86400}
+    refresh_token_cookie_name: ${JWT_REFRESH_COOKIE_NAME:refreshToken}
+    cookie-secure: ${JWT_COOKIE_SECURE:true}
+    cookie-http-only: ${JWT_COOKIEHTTP_ONLY:true}
+    cookie-same-site: ${JWT_COOKIE_SAME_SITE:lax}
+#   cookie-domain: ${JWT_COOKIE_DOMAIN:.auth-app-backend.com}
+    cookie-domain: ${JWT_COOKIE_DOMAIN:localhost}
+
+app:
+  cors:
+    front-end-url: http://localhost:port_number/
+  auth:
+    fronted:
+      success-redirect: http://localhost:5173/oauth2/success
+      failure-redirect: http://localhost:5173/oauth2/failure

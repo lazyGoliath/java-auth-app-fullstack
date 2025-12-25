@@ -1,0 +1,31 @@
+server:
+  port: #specify port number here
+
+spring:
+  application:
+    name: auth-backend
+  profiles:
+    active: # choose any profile[dev/qa/production]
+
+  #database configuration
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+    hikari:
+      pool-name: neon-hikari
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000        # 30s
+      connection-timeout: 20000  # 20s
+      max-lifetime: 1800000      # 30m (keep below Neon’s TCP idle timeouts)
+      validation-timeout: 5000
+      leak-detection-threshold: 0
+      initialization-fail-timeout: -1  # don't fail app if DB is momentarily unavailable
+
+  jpa:
+    hibernate:
+      ddl-auto: update            # dev only; use Flyway in prod
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    database-platform: org.hibernate.dialect.MySQL8Dialect
