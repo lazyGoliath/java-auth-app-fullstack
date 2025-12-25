@@ -18,7 +18,7 @@ function Navbar() {
         try {
             setLoading(true);
             await logout(false);
-            navigate("/login");
+            navigate("/");
         } catch (error) {
             console.error("Logout failed:", error);
         } finally {
@@ -73,19 +73,20 @@ function Navbar() {
             >
                 {checkLogin() ? 
                     <>
-                        <p
+                        <NavLink
+                        to="/dashboard/profile"
                         className="relative font-medium text-slate-300 hover:text-white transition-colors duration-200 group"
                         >
                         {user?.name}'s Home
                         <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-linear-to-r from-purple-500 to-cyan-500 group-hover:w-full transition-all duration-300"></span>
-                        </p>
-                        <a
-                        href="/about"
+                        </NavLink>
+                        <NavLink
+                        to="/about"
                         className="relative font-medium text-gray-300 hover:text-white transition-colors duration-200 group"
                         >
                         About
                         <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-linear-to-r from-purple-500 to-cyan-500 group-hover:w-full transition-all duration-300" />
-                        </a>
+                        </NavLink>
                         <div className="flex gap-3 md:gap-4 flex-col md:flex-row w-full md:w-auto">
                             <Button
                             onClick={handleLogout}

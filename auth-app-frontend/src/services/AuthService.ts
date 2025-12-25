@@ -2,6 +2,7 @@ import type RegisterData from "@/models/RegisterData";
 import apiClient from "@/config/ApiClient";
 import type LoginData from "@/models/LoginData";
 import type LoginResponsetData from "@/models/LoginResponseData";
+import type User from "@/models/User";
 
 // resgister user service
 export const registerUser = async (signUpData: RegisterData) => {
@@ -31,6 +32,10 @@ export const logoutUser = async () => {
 }
 
 // get current user service
+export const getCurrentUser = async (emailId:string|undefined) => {
+    const response = await apiClient.get<User>(`/users/email/${emailId}`)
+    return response.data
+}
 
 // logout user service
 
