@@ -40,3 +40,7 @@ export const getCurrentUser = async (emailId:string|undefined) => {
 // logout user service
 
 // get refresh token service
+export const getRefreshToken = async () => {
+    const response = await apiClient.post<LoginResponsetData>("/auth/refresh")
+    return response.data
+}

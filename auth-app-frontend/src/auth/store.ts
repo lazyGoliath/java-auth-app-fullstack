@@ -21,6 +21,13 @@ type AuthState = {
     login: (loginData:LoginData) => Promise<LoginResponsetData | void>;
     logout: (silent:boolean) => Promise<void>;
     checkLogin: () => boolean | undefined;
+
+    changeLocalLoginData : (
+        accessToken: string,
+        user : User,
+        authStatus: boolean,
+        // authLoading: boolean
+    ) => void;
     // setUser: (user: User | null) => void;
     // setAccessToken: (token: string | null) => void;
     // clearAuth: () => void;
@@ -87,6 +94,20 @@ const useAuth = create<AuthState>()(
             } else {
                 return false;
             }
+        },
+
+        changeLocalLoginData : (
+            access: string,
+            user : User,
+            authStatus: boolean,
+            // authLoading: boolean
+        ) => {
+            set({
+                accessToken: access,
+                user: user,
+                authStatus: authStatus,
+                // authLoading: authLoading,
+            });
         },
         })),{
             name: LOCAL_KEY,
